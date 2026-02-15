@@ -313,6 +313,12 @@ code {
   margin: 0.4rem 0 1.5rem;
 }
 
+.app-footer p {
+  margin: 0 0 0.2rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
 .app-footer a {
   font-size: 0.78rem;
   color: var(--muted);
