@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Endurance Fuelling 101</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="hero">
+        <h1>Fuel Like a Pro</h1>
+        <p>
+          Strategic fueling is your secret weapon for performance, unlocking the
+          ability to push harder, stay sharper, and finish stronger than you
+          ever thought possible. Nutrition companies charge top dollar, but
+          these recipes give you the same edge at a fraction of the cost.
+        </p>
+      </header>
+
+      <nav class="tabs" aria-label="App sections">
+        <button
+          id="tabPlanner"
+          class="tab is-active"
+          data-tab="planner"
+          type="button"
+        >
+          Planner
+        </button>
+        <button id="tabRecipes" class="tab" data-tab="recipes" type="button">
+          Recipes
+        </button>
+      </nav>
+
+      <div id="panelPlanner" class="tab-panel">
+        <section class="card inputs">
+          <h2>Inputs</h2>
+
+          <div class="field-group">
+            <label for="durationValue">Activity duration</label>
+            <div class="inline-inputs">
+              <input
+                id="durationValue"
+                type="number"
+                min="1"
+                step="1"
+                value="120"
+              />
+              <select id="durationUnit">
+                <option value="minutes" selected>minutes</option>
+                <option value="hours">hours</option>
+              </select>
+            </div>
+            <input
+              id="durationSlider"
+              type="range"
+              min="15"
+              max="600"
+              step="5"
+              value="120"
+            />
+            <small id="durationHint"></small>
+          </div>
+
+          <div class="field-group">
+            <div class="label-row">
+              <label for="carbsPerHour">Desired carbs per hour (g/h)</label>
+              <button id="applyDefault" type="button" class="ghost">
+                Use duration default
+              </button>
+            </div>
+            <div class="inline-inputs">
+              <input
+                id="carbsPerHour"
+                type="number"
+                min="0"
+                max="140"
+                step="1"
+                value="60"
+              />
+              <input
+                id="carbsPerHourSlider"
+                type="range"
+                min="0"
+                max="140"
+                step="1"
+                value="60"
+              />
+            </div>
+            <small id="defaultGuidance"></small>
+          </div>
+
+          <div class="field-group">
+            <label for="pouchSizeMl">Pouch size (ml)</label>
+            <div class="inline-inputs">
+              <input
+                id="pouchSizeMl"
+                type="number"
+                min="30"
+                max="350"
+                step="1"
+                value="150"
+              />
+              <input
+                id="pouchSizeSlider"
+                type="range"
+                min="30"
+                max="350"
+                step="1"
+                value="150"
+              />
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="toggle-row">
+              <input id="includeElectrolytes" type="checkbox" checked />
+              Include electrolytes
+            </label>
+          </div>
+
+          <div id="electrolytePanel" class="field-group">
+            <label>Electrolyte target input mode</label>
+            <div class="radio-row">
+              <label
+                ><input
+                  type="radio"
+                  name="electrolyteMode"
+                  value="sodium"
+                  checked
+                />
+                Sodium (mg/h)</label
+              >
+              <label
+                ><input
+                  type="radio"
+                  name="electrolyteMode"
+                  value="electrolyte"
+                />
+                Electrolyte mix (g/h)</label
+              >
+            </div>
+
+            <div id="sodiumControls" class="inline-inputs">
+              <input
+                id="sodiumPerHour"
+                type="number"
+                min="0"
+                max="2000"
+                step="10"
+                value="600"
+              />
+              <input
+                id="sodiumPerHourSlider"
+                type="range"
+                min="0"
+                max="2000"
+                step="10"
+                value="600"
+              />
+            </div>
+
+            <div id="electrolyteControls" class="inline-inputs hidden">
+              <input
+                id="electrolytePerHour"
+                type="number"
+                min="0"
+                max="12"
+                step="0.1"
+                value="2.9"
+              />
+              <input
+                id="electrolytePerHourSlider"
+                type="range"
+                min="0"
+                max="12"
+                step="0.1"
+                value="2.9"
+              />
+            </div>
+          </div>
+        </section>
+
+        <section class="card outputs">
+          <div class="section-head">
+            <h2>Plan Output</h2>
+            <button id="copyPlan" type="button">Copy plan</button>
+          </div>
+
+          <div id="warning" class="warning hidden"></div>
+
+          <div class="grid">
+            <article>
+              <h3>Recipe per pouch</h3>
+              <ul>
+                <li>
+                  <span>Carbs</span><strong id="outCarbsPerPouch"></strong>
+                </li>
+                <li>
+                  <span>Water</span><strong id="outWaterPerPouch"></strong>
+                </li>
+                <li>
+                  <span>Electrolyte mix</span
+                  ><strong id="outElectrolytePerPouch"></strong>
+                </li>
+              </ul>
+            </article>
+
+            <article>
+              <h3>Session totals</h3>
+              <ul>
+                <li>
+                  <span>Total carbs</span><strong id="outTotalCarbs"></strong>
+                </li>
+                <li>
+                  <span>Pouches needed</span
+                  ><strong id="outPouchesNeeded"></strong>
+                </li>
+                <li>
+                  <span>Carbs per pouch (planned)</span
+                  ><strong id="outCarbsPerPouchPlanned"></strong>
+                </li>
+                <li>
+                  <span>Total water</span><strong id="outTotalWater"></strong>
+                </li>
+                <li>
+                  <span>Total electrolyte mix</span
+                  ><strong id="outTotalElectrolyte"></strong>
+                </li>
+              </ul>
+            </article>
+          </div>
+
+          <article class="assumptions">
+            <h3>Source assumptions</h3>
+            <p>
+              Default carb targets are duration-based and set to practical
+              starting points from sports nutrition consensus: very short
+              sessions can be <strong>0 g/h</strong>, then roughly
+              <strong>30 g/h</strong>, <strong>60 g/h</strong>, and up to
+              <strong>90 g/h</strong> as duration increases and tolerance
+              allows.
+            </p>
+            <p class="fineprint">
+              These are defaults only. Override carbs/h to match your gut
+              training, intensity, and race conditions.
+            </p>
+          </article>
+        </section>
+      </div>
+
+      <div id="panelRecipes" class="tab-panel hidden">
+        <section class="card">
+          <h2>Recipes</h2>
+          <p class="fineprint">
+            The following recipes contain the same ingredients as the most
+            expensive and high-performing sports products on the market. They
+            have been tried and tested by cyclists and runners participating in
+            some of the biggest events in the world.
+          </p>
+
+          <div class="field-group">
+            <label for="recipeScale">Number of servings</label>
+            <div class="inline-inputs">
+              <input
+                id="recipeScale"
+                type="number"
+                min="1"
+                max="1000"
+                step="1"
+                value="100"
+              />
+              <input
+                id="recipeScaleSlider"
+                type="range"
+                min="1"
+                max="1000"
+                step="1"
+                value="100"
+              />
+            </div>
+            <small
+              >Ingredient totals below are calculated for this many
+              servings.</small
+            >
+            <small id="recipeScaleSummary"></small>
+          </div>
+
+          <div id="recipeCards" class="recipe-grid"></div>
+        </section>
+
+        <section class="card gear-card">
+          <h3>Reusable Gel Containers</h3>
+          <p class="fineprint">
+            After experimentation, these are the best reusable gel containers for use on foot and on the bike.
+            Kids food pouches are excellent on a budget, Hydrapak are the best soft reusable containers.
+          </p>
+          <ul class="gear-links">
+            <li>
+              <a
+                href="https://www.amazon.co.uk/HydraPak-Softflask-150ml-Collapsible-Nutrition/dp/B0BRBPN8HS?ref_=pd_ci_mcx_mh_pe_im_d1_hxwPPE_sspa_dk_det_cao_p_0_1&pd_rd_i=B0BRBPN8HS&pd_rd_w=BGI5E&content-id=amzn1.sym.6f37edc9-b530-4b93-a807-2bc2b2be3e07&pf_rd_p=6f37edc9-b530-4b93-a807-2bc2b2be3e07&pf_rd_r=WJVA1Z7EAS115X1AB0PR&pd_rd_wg=potIC&pd_rd_r=204d8823-1fd8-4e61-96c2-f0b179eaa8f8&th=1"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Best soft reusable container (Hydrapak 150 ml)</a
+              >
+            </li>
+            <li>
+              <a
+                href="https://www.amazon.co.uk/ChooMee-Reusable-Premium-Double-Zipper/dp/B01GJ5PIEW/ref=sr_1_1_sspa?crid=Z7ZNB40FCKSN&dib=eyJ2IjoiMSJ9._8BzxzbPV3gvEawvk-SO19oEl5YIGwR4MHlDHueNKdn4Ygp6qxVLy81GbcK246MqS9W0KcO1cYXm7CErNkYKmTFxgQYaOEEoNzBcpEyVVdeGpgqAPwvrqt0zeriYAabCR5J23cP-KINs3vas2DotIbE3uhaafxuaNwmCtMEy1Dg8R-AbCRRG9SydZ5HFE65d7GiH4v-0e9oX8t2vnrA37x5XWa95zK5xfduMfpomSORphyBeyW9HDY8B0JonZ45Bm_moBfff0QSbroUdeWUYH8uQxXwlzDggvM59Kj8w7c4.kBmfYHX9fQf86kMeeoKyW4mi1udiloTXBp1-v053OIw&dib_tag=se&keywords=reusable%2Bfood%2Bkids&qid=1771176175&sprefix=reusable%2Bfood%2Bkid%2Caps%2C178&sr=8-1-spons&aref=CrJfhmygL5&sp_csd=d2lkZ2V0TmFtZT1zcF9hdGY&th=1"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Best budget option (kids reusable food pouches)</a
+              >
+            </li>
+          </ul>
+        </section>
+      </div>
+    </main>
+    <footer class="app-footer">
+      <a
+        href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7303329/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Science-backed recipes for most efficiency carbohydrate delivery
+      </a>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>

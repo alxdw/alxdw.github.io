@@ -1,0 +1,414 @@
+const CARB_RATIO = 0.6;
+const WATER_RATIO = 0.4;
+const CARB_DENSITY_G_PER_ML = 0.7;
+const ELECTROLYTE_G_PER_1000MG_SODIUM = 4.8;
+
+const RECIPE_TEMPLATES = [
+  {
+    name: "Carbohydrate mix",
+    note: "Approx. 80 g carbs per serving. Can be mixed as a gel (recommended80% mix to 20% water) or as a drink.",
+    baseBatchServings: 10,
+    perServingIngredients: [
+      { name: "Maltodextrin", amount: 44, unit: "g" },
+      { name: "Fructose", amount: 36, unit: "g" },
+      { name: "Pectin", amount: 1.25, unit: "g" },
+      { name: "Sodium alginate", amount: 1.0, unit: "g" },
+    ],
+  },
+  {
+    name: "Electrolyte Mix (bulk)",
+    note: "Per-serving electrolyte recipe (~4.8 g serving).",
+    baseBatchServings: 10,
+    perServingIngredients: [
+      { name: "Sodium citrate", amount: 3.67, unit: "g" },
+      { name: "Lite salt blend (sodium/potassium chloride)", amount: 0.8, unit: "g" },
+      { name: "Magnesium sulfate", amount: 0.25, unit: "g" },
+      { name: "Calcium carbonate", amount: 0.08, unit: "g" },
+    ],
+  },
+];
+
+const els = {
+  tabPlanner: document.getElementById("tabPlanner"),
+  tabRecipes: document.getElementById("tabRecipes"),
+  panelPlanner: document.getElementById("panelPlanner"),
+  panelRecipes: document.getElementById("panelRecipes"),
+  durationValue: document.getElementById("durationValue"),
+  durationUnit: document.getElementById("durationUnit"),
+  durationSlider: document.getElementById("durationSlider"),
+  durationHint: document.getElementById("durationHint"),
+  carbsPerHour: document.getElementById("carbsPerHour"),
+  carbsPerHourSlider: document.getElementById("carbsPerHourSlider"),
+  applyDefault: document.getElementById("applyDefault"),
+  defaultGuidance: document.getElementById("defaultGuidance"),
+  pouchSizeMl: document.getElementById("pouchSizeMl"),
+  pouchSizeSlider: document.getElementById("pouchSizeSlider"),
+  includeElectrolytes: document.getElementById("includeElectrolytes"),
+  electrolytePanel: document.getElementById("electrolytePanel"),
+  sodiumControls: document.getElementById("sodiumControls"),
+  electrolyteControls: document.getElementById("electrolyteControls"),
+  sodiumPerHour: document.getElementById("sodiumPerHour"),
+  sodiumPerHourSlider: document.getElementById("sodiumPerHourSlider"),
+  electrolytePerHour: document.getElementById("electrolytePerHour"),
+  electrolytePerHourSlider: document.getElementById("electrolytePerHourSlider"),
+  warning: document.getElementById("warning"),
+  outCarbsPerPouch: document.getElementById("outCarbsPerPouch"),
+  outWaterPerPouch: document.getElementById("outWaterPerPouch"),
+  outElectrolytePerPouch: document.getElementById("outElectrolytePerPouch"),
+  outTotalCarbs: document.getElementById("outTotalCarbs"),
+  outPouchesNeeded: document.getElementById("outPouchesNeeded"),
+  outCarbsPerPouchPlanned: document.getElementById("outCarbsPerPouchPlanned"),
+  outTotalWater: document.getElementById("outTotalWater"),
+  outTotalElectrolyte: document.getElementById("outTotalElectrolyte"),
+  copyPlan: document.getElementById("copyPlan"),
+  recipeScale: document.getElementById("recipeScale"),
+  recipeScaleSlider: document.getElementById("recipeScaleSlider"),
+  recipeScaleSummary: document.getElementById("recipeScaleSummary"),
+  recipeCards: document.getElementById("recipeCards"),
+};
+
+let manualCarbOverride = false;
+
+function clamp(num, min, max) {
+  return Math.min(Math.max(num, min), max);
+}
+
+function round(num, decimals = 1) {
+  return Number(num.toFixed(decimals));
+}
+
+function fmt(value, unit, decimals = 1) {
+  return `${round(value, decimals)} ${unit}`;
+}
+
+function getDurationMinutes() {
+  const raw = Number(els.durationValue.value) || 0;
+  return els.durationUnit.value === "hours" ? raw * 60 : raw;
+}
+
+function setDurationFromMinutes(minutes) {
+  const m = clamp(minutes, 1, 600);
+  if (els.durationUnit.value === "hours") {
+    els.durationValue.value = round(m / 60, 2);
+  } else {
+    els.durationValue.value = Math.round(m);
+  }
+  els.durationSlider.value = Math.round(m);
+}
+
+function recommendationFromDuration(minutes) {
+  if (minutes < 45) {
+    return {
+      carbsPerHour: 0,
+      note: "<45 min: carbs often optional; focus on pre-session fueling/hydration.",
+    };
+  }
+  if (minutes < 75) {
+    return {
+      carbsPerHour: 30,
+      note: "45-75 min: small amounts (~30 g/h) are a practical starting point.",
+    };
+  }
+  if (minutes <= 150) {
+    return {
+      carbsPerHour: 60,
+      note: "75-150 min: ~60 g/h is a common endurance target.",
+    };
+  }
+  return {
+    carbsPerHour: 90,
+    note: ">150 min: up to ~90 g/h may help if trained/tolerated.",
+  };
+}
+
+function getSelectedElectrolyteMode() {
+  const selected = document.querySelector(
+    'input[name="electrolyteMode"]:checked',
+  );
+  return selected ? selected.value : "sodium";
+}
+
+function syncPair(numberInput, rangeInput, onChange) {
+  numberInput.addEventListener("input", () => {
+    rangeInput.value = numberInput.value;
+    onChange();
+  });
+  rangeInput.addEventListener("input", () => {
+    numberInput.value = rangeInput.value;
+    onChange();
+  });
+}
+
+function syncElectrolyteDerivedFields(sourceMode) {
+  if (sourceMode === "sodium") {
+    const sodium = Number(els.sodiumPerHour.value) || 0;
+    const electrolyte = (sodium / 1000) * ELECTROLYTE_G_PER_1000MG_SODIUM;
+    els.electrolytePerHour.value = round(electrolyte, 2);
+    els.electrolytePerHourSlider.value = round(electrolyte, 2);
+  } else {
+    const electrolyte = Number(els.electrolytePerHour.value) || 0;
+    const sodium = (electrolyte / ELECTROLYTE_G_PER_1000MG_SODIUM) * 1000;
+    els.sodiumPerHour.value = round(sodium, 0);
+    els.sodiumPerHourSlider.value = round(sodium, 0);
+  }
+}
+
+function showElectrolyteModeControls() {
+  const mode = getSelectedElectrolyteMode();
+  els.sodiumControls.classList.toggle("hidden", mode !== "sodium");
+  els.electrolyteControls.classList.toggle("hidden", mode !== "electrolyte");
+}
+
+function updateDefaultsAndGuidance() {
+  const durationMinutes = getDurationMinutes();
+  const rec = recommendationFromDuration(durationMinutes);
+  els.defaultGuidance.textContent = `Duration default: ${rec.carbsPerHour} g/h. ${rec.note}`;
+  els.durationHint.textContent = `Duration in minutes: ${Math.round(durationMinutes)} min.`;
+
+  if (!manualCarbOverride) {
+    els.carbsPerHour.value = rec.carbsPerHour;
+    els.carbsPerHourSlider.value = rec.carbsPerHour;
+  }
+}
+
+function calculatePlan() {
+  const durationMinutes = getDurationMinutes();
+  const durationHours = durationMinutes / 60;
+  const carbsPerHour = Math.max(0, Number(els.carbsPerHour.value) || 0);
+  const pouchSizeMl = Math.max(1, Number(els.pouchSizeMl.value) || 0);
+
+  const totalCarbs = carbsPerHour * durationHours;
+  const maxCarbsPerPouch = pouchSizeMl * CARB_DENSITY_G_PER_ML;
+  const pouchesNeeded =
+    totalCarbs > 0 ? Math.ceil(totalCarbs / maxCarbsPerPouch) : 0;
+  const carbsPerPouchPlanned =
+    pouchesNeeded > 0 ? totalCarbs / pouchesNeeded : 0;
+  const waterPerPouch = carbsPerPouchPlanned * (WATER_RATIO / CARB_RATIO);
+  const totalWater = waterPerPouch * pouchesNeeded;
+
+  const includeElectrolytes = els.includeElectrolytes.checked;
+  const mode = getSelectedElectrolyteMode();
+
+  let sodiumPerHour = Number(els.sodiumPerHour.value) || 0;
+  let electrolytePerHour = Number(els.electrolytePerHour.value) || 0;
+
+  if (mode === "sodium") {
+    electrolytePerHour =
+      (sodiumPerHour / 1000) * ELECTROLYTE_G_PER_1000MG_SODIUM;
+  } else {
+    sodiumPerHour =
+      (electrolytePerHour / ELECTROLYTE_G_PER_1000MG_SODIUM) * 1000;
+  }
+
+  const totalElectrolyte = includeElectrolytes
+    ? electrolytePerHour * durationHours
+    : 0;
+  const electrolytePerPouch =
+    includeElectrolytes && pouchesNeeded > 0
+      ? totalElectrolyte / pouchesNeeded
+      : 0;
+
+  els.outCarbsPerPouch.textContent = fmt(carbsPerPouchPlanned, "g", 1);
+  els.outWaterPerPouch.textContent = fmt(waterPerPouch, "g", 1);
+  els.outElectrolytePerPouch.textContent = includeElectrolytes
+    ? fmt(electrolytePerPouch, "g", 2)
+    : "off";
+  els.outTotalCarbs.textContent = fmt(totalCarbs, "g", 1);
+  els.outPouchesNeeded.textContent = String(pouchesNeeded);
+  els.outCarbsPerPouchPlanned.textContent = fmt(carbsPerPouchPlanned, "g", 1);
+  els.outTotalWater.textContent = fmt(totalWater, "g", 1);
+  els.outTotalElectrolyte.textContent = includeElectrolytes
+    ? fmt(totalElectrolyte, "g", 2)
+    : "off";
+
+  const requiredMlForCurrentCarbsPerHour = carbsPerHour / CARB_DENSITY_G_PER_ML;
+  if (carbsPerHour > maxCarbsPerPouch && carbsPerHour > 0) {
+    els.warning.classList.remove("hidden");
+    els.warning.textContent = `Warning: one pouch per hour at ${fmt(carbsPerHour, "g", 0)} exceeds this pouch's carb capacity (${fmt(maxCarbsPerPouch, "g", 1)} at 0.7 g/ml). You'd need about ${fmt(requiredMlForCurrentCarbsPerHour, "ml", 0)} per pouch if taking one pouch each hour.`;
+  } else {
+    els.warning.classList.add("hidden");
+    els.warning.textContent = "";
+  }
+
+  return {
+    durationHours,
+    durationMinutes,
+    carbsPerHour,
+    totalCarbs,
+    pouchSizeMl,
+    maxCarbsPerPouch,
+    pouchesNeeded,
+    carbsPerPouchPlanned,
+    waterPerPouch,
+    totalWater,
+    includeElectrolytes,
+    sodiumPerHour,
+    electrolytePerHour,
+    electrolytePerPouch,
+    totalElectrolyte,
+    requiredMlForCurrentCarbsPerHour,
+  };
+}
+
+function formatAmount(amount, unit) {
+  if (unit === "g" && amount >= 1000) {
+    const kgAmount = amount / 1000;
+    const decimals = kgAmount < 10 ? 2 : 1;
+    return `${round(kgAmount, decimals)} kg`;
+  }
+  const decimals = amount < 10 ? 2 : amount < 100 ? 1 : 0;
+  return `${round(amount, decimals)} ${unit}`;
+}
+
+function renderRecipes() {
+  const servings = clamp(Number(els.recipeScale.value) || 1, 1, 1000);
+  els.recipeScale.value = Math.round(servings);
+  els.recipeScaleSlider.value = Math.round(servings);
+  els.recipeScaleSummary.textContent = `Planning amounts for ${Math.round(servings)} servings (base recipe reference is 10 servings).`;
+
+  const cards = RECIPE_TEMPLATES.map((recipe) => {
+    const recipeTotalServings = servings;
+    const rows = recipe.perServingIngredients
+      .map((ingredient) => {
+        const batchAmount = ingredient.amount * recipeTotalServings;
+        return `
+          <li>
+            <span>${ingredient.name}</span>
+            <strong class="ingredient-amount">
+              <span>${formatAmount(batchAmount, ingredient.unit)} for batch</span>
+              <span class="ingredient-total">${formatAmount(ingredient.amount, ingredient.unit)} / serving</span>
+            </strong>
+          </li>
+        `;
+      })
+      .join("");
+
+    return `
+      <article class="recipe-card">
+        <h3>${recipe.name}</h3>
+        <p class="fineprint">${recipe.note}</p>
+        <ul class="ingredient-list">${rows}</ul>
+      </article>
+    `;
+  }).join("");
+
+  els.recipeCards.innerHTML = cards;
+}
+
+function switchTab(tabName) {
+  const planner = tabName === "planner";
+  els.tabPlanner.classList.toggle("is-active", planner);
+  els.tabRecipes.classList.toggle("is-active", !planner);
+  els.panelPlanner.classList.toggle("hidden", !planner);
+  els.panelRecipes.classList.toggle("hidden", planner);
+}
+
+function handleAnyInput() {
+  updateDefaultsAndGuidance();
+  calculatePlan();
+}
+
+syncPair(els.carbsPerHour, els.carbsPerHourSlider, () => {
+  manualCarbOverride = true;
+  handleAnyInput();
+});
+
+syncPair(els.pouchSizeMl, els.pouchSizeSlider, handleAnyInput);
+
+syncPair(els.sodiumPerHour, els.sodiumPerHourSlider, () => {
+  syncElectrolyteDerivedFields("sodium");
+  handleAnyInput();
+});
+
+syncPair(els.electrolytePerHour, els.electrolytePerHourSlider, () => {
+  syncElectrolyteDerivedFields("electrolyte");
+  handleAnyInput();
+});
+
+syncPair(els.recipeScale, els.recipeScaleSlider, renderRecipes);
+
+els.durationSlider.addEventListener("input", () => {
+  setDurationFromMinutes(Number(els.durationSlider.value));
+  handleAnyInput();
+});
+
+els.durationValue.addEventListener("input", handleAnyInput);
+
+els.durationUnit.addEventListener("change", () => {
+  const previousMinutes = Number(els.durationSlider.value);
+  els.durationValue.step = els.durationUnit.value === "hours" ? "0.25" : "1";
+  setDurationFromMinutes(previousMinutes);
+  handleAnyInput();
+});
+
+els.applyDefault.addEventListener("click", () => {
+  manualCarbOverride = false;
+  updateDefaultsAndGuidance();
+  calculatePlan();
+});
+
+els.includeElectrolytes.addEventListener("change", () => {
+  els.electrolytePanel.classList.toggle(
+    "hidden",
+    !els.includeElectrolytes.checked,
+  );
+  handleAnyInput();
+});
+
+document.querySelectorAll('input[name="electrolyteMode"]').forEach((input) => {
+  input.addEventListener("change", () => {
+    showElectrolyteModeControls();
+    handleAnyInput();
+  });
+});
+
+els.tabPlanner.addEventListener("click", () => switchTab("planner"));
+els.tabRecipes.addEventListener("click", () => switchTab("recipes"));
+
+els.copyPlan.addEventListener("click", async () => {
+  const plan = calculatePlan();
+  const lines = [
+    "Endurance Fuel Plan",
+    "",
+    `Duration: ${fmt(plan.durationMinutes, "min", 0)} (${fmt(plan.durationHours, "h", 2)})`,
+    `Target carbs: ${fmt(plan.carbsPerHour, "g/h", 0)}`,
+    `Pouch size: ${fmt(plan.pouchSizeMl, "ml", 0)}`,
+    `Max carbs per pouch: ${fmt(plan.maxCarbsPerPouch, "g", 1)}`,
+    `Pouches needed: ${plan.pouchesNeeded}`,
+    "",
+    "Per pouch recipe:",
+    `- Carbs: ${fmt(plan.carbsPerPouchPlanned, "g", 1)}`,
+    `- Water: ${fmt(plan.waterPerPouch, "g", 1)}`,
+    `- Electrolyte mix: ${plan.includeElectrolytes ? fmt(plan.electrolytePerPouch, "g", 2) : "off"}`,
+    "",
+    "Session totals:",
+    `- Total carbs: ${fmt(plan.totalCarbs, "g", 1)}`,
+    `- Total water: ${fmt(plan.totalWater, "g", 1)}`,
+    `- Total electrolyte mix: ${plan.includeElectrolytes ? fmt(plan.totalElectrolyte, "g", 2) : "off"}`,
+    "",
+    "Constants:",
+    `- CARB_RATIO=${CARB_RATIO}`,
+    `- WATER_RATIO=${WATER_RATIO}`,
+    `- CARB_DENSITY_G_PER_ML=${CARB_DENSITY_G_PER_ML}`,
+    `- ELECTROLYTE_G_PER_1000MG_SODIUM=${ELECTROLYTE_G_PER_1000MG_SODIUM}`,
+  ];
+
+  const text = lines.join("\n");
+  try {
+    await navigator.clipboard.writeText(text);
+    els.copyPlan.textContent = "Copied";
+  } catch (err) {
+    els.copyPlan.textContent = "Copy failed";
+  }
+  setTimeout(() => {
+    els.copyPlan.textContent = "Copy plan";
+  }, 1500);
+});
+
+els.durationValue.step = "1";
+switchTab("planner");
+showElectrolyteModeControls();
+syncElectrolyteDerivedFields("sodium");
+updateDefaultsAndGuidance();
+calculatePlan();
+renderRecipes();
