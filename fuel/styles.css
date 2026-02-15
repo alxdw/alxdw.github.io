@@ -253,12 +253,31 @@ code {
   margin-top: 0;
 }
 
+.affiliate-subheader {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.01em;
+}
+
 .ingredient-list li {
   display: flex;
   justify-content: space-between;
   gap: 0.5rem;
   padding: 0.32rem 0;
   border-bottom: 1px dashed #e7edf2;
+}
+
+.ingredient-link {
+  color: var(--ink);
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 0.22rem;
+  text-decoration-thickness: 0.08rem;
+}
+
+.ingredient-link:hover {
+  color: var(--accent-strong);
 }
 
 .ingredient-amount {
@@ -270,6 +289,12 @@ code {
 
 .ingredient-total {
   font-size: 0.86em;
+  color: var(--muted);
+}
+
+.recipe-affiliate-footnote {
+  margin: 0.2rem 0 0.5rem;
+  font-size: 0.72rem;
   color: var(--muted);
 }
 

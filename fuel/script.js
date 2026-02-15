@@ -9,10 +9,25 @@ const RECIPE_TEMPLATES = [
     note: "Approx. 80 g carbs per serving. Can be mixed as a gel (recommended80% mix to 20% water) or as a drink.",
     baseBatchServings: 10,
     perServingIngredients: [
-      { name: "Maltodextrin", amount: 44, unit: "g" },
-      { name: "Fructose", amount: 36, unit: "g" },
-      { name: "Pectin", amount: 1.25, unit: "g" },
-      { name: "Sodium alginate", amount: 1.0, unit: "g" },
+      {
+        name: "Maltodextrin",
+        amount: 44,
+        unit: "g",
+        url: "https://amzn.to/4aBpDAC",
+      },
+      {
+        name: "Fructose",
+        amount: 36,
+        unit: "g",
+        url: "https://amzn.to/4kAzXxb",
+      },
+      { name: "Pectin", amount: 1.25, unit: "g", url: "https://amzn.to/3ZzzQbL" },
+      {
+        name: "Sodium alginate",
+        amount: 1.0,
+        unit: "g",
+        url: "https://amzn.to/4qJr4TF",
+      },
     ],
   },
   {
@@ -20,10 +35,30 @@ const RECIPE_TEMPLATES = [
     note: "Per-serving electrolyte recipe (~4.8 g serving).",
     baseBatchServings: 10,
     perServingIngredients: [
-      { name: "Sodium citrate", amount: 3.67, unit: "g" },
-      { name: "Lite salt blend (sodium/potassium chloride)", amount: 0.8, unit: "g" },
-      { name: "Magnesium sulfate", amount: 0.25, unit: "g" },
-      { name: "Calcium carbonate", amount: 0.08, unit: "g" },
+      {
+        name: "Sodium citrate",
+        amount: 3.67,
+        unit: "g",
+        url: "https://amzn.to/4cfULrZ",
+      },
+      {
+        name: "Saxa so low (lite salt blend)",
+        amount: 0.8,
+        unit: "g",
+        url: "https://amzn.to/4bRkpD3",
+      },
+      {
+        name: "Magnesium sulphate",
+        amount: 0.25,
+        unit: "g",
+        url: "https://amzn.to/4ayVfGO",
+      },
+      {
+        name: "Calcium carbonate",
+        amount: 0.08,
+        unit: "g",
+        url: "https://amzn.to/3OJ8b5H",
+      },
     ],
   },
 ];
@@ -270,9 +305,12 @@ function renderRecipes() {
     const rows = recipe.perServingIngredients
       .map((ingredient) => {
         const batchAmount = ingredient.amount * recipeTotalServings;
+        const ingredientName = ingredient.url
+          ? `<a class="ingredient-link" href="${ingredient.url}" target="_blank" rel="noopener noreferrer">${ingredient.name}</a>`
+          : ingredient.name;
         return `
           <li>
-            <span>${ingredient.name}</span>
+            <span>${ingredientName}</span>
             <strong class="ingredient-amount">
               <span>${formatAmount(batchAmount, ingredient.unit)} for batch</span>
               <span class="ingredient-total">${formatAmount(ingredient.amount, ingredient.unit)} / serving</span>
@@ -286,6 +324,7 @@ function renderRecipes() {
       <article class="recipe-card">
         <h3>${recipe.name}</h3>
         <p class="fineprint">${recipe.note}</p>
+        <p class="recipe-affiliate-footnote">* Ingredient links are affiliate links.</p>
         <ul class="ingredient-list">${rows}</ul>
       </article>
     `;
