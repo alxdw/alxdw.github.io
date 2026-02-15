@@ -18,7 +18,6 @@ A single-page local web app for planning homemade endurance fuel recipes using y
   - session totals
   - pouches needed
 - Warns if a one-pouch-per-hour strategy would exceed pouch capacity at `0.7 g/ml`.
-- Includes a `Copy plan` button for race notes.
 
 ## Run Locally
 

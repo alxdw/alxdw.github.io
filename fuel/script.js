@@ -60,7 +60,6 @@ const els = {
   outCarbsPerPouchPlanned: document.getElementById("outCarbsPerPouchPlanned"),
   outTotalWater: document.getElementById("outTotalWater"),
   outTotalElectrolyte: document.getElementById("outTotalElectrolyte"),
-  copyPlan: document.getElementById("copyPlan"),
   recipeScale: document.getElementById("recipeScale"),
   recipeScaleSlider: document.getElementById("recipeScaleSlider"),
   recipeScaleSummary: document.getElementById("recipeScaleSummary"),
@@ -364,46 +363,6 @@ document.querySelectorAll('input[name="electrolyteMode"]').forEach((input) => {
 
 els.tabPlanner.addEventListener("click", () => switchTab("planner"));
 els.tabRecipes.addEventListener("click", () => switchTab("recipes"));
-
-els.copyPlan.addEventListener("click", async () => {
-  const plan = calculatePlan();
-  const lines = [
-    "Endurance Fuel Plan",
-    "",
-    `Duration: ${fmt(plan.durationMinutes, "min", 0)} (${fmt(plan.durationHours, "h", 2)})`,
-    `Target carbs: ${fmt(plan.carbsPerHour, "g/h", 0)}`,
-    `Pouch size: ${fmt(plan.pouchSizeMl, "ml", 0)}`,
-    `Max carbs per pouch: ${fmt(plan.maxCarbsPerPouch, "g", 1)}`,
-    `Pouches needed: ${plan.pouchesNeeded}`,
-    "",
-    "Per pouch recipe:",
-    `- Carbs: ${fmt(plan.carbsPerPouchPlanned, "g", 1)}`,
-    `- Water: ${fmt(plan.waterPerPouch, "g", 1)}`,
-    `- Electrolyte mix: ${plan.includeElectrolytes ? fmt(plan.electrolytePerPouch, "g", 2) : "off"}`,
-    "",
-    "Session totals:",
-    `- Total carbs: ${fmt(plan.totalCarbs, "g", 1)}`,
-    `- Total water: ${fmt(plan.totalWater, "g", 1)}`,
-    `- Total electrolyte mix: ${plan.includeElectrolytes ? fmt(plan.totalElectrolyte, "g", 2) : "off"}`,
-    "",
-    "Constants:",
-    `- CARB_RATIO=${CARB_RATIO}`,
-    `- WATER_RATIO=${WATER_RATIO}`,
-    `- CARB_DENSITY_G_PER_ML=${CARB_DENSITY_G_PER_ML}`,
-    `- ELECTROLYTE_G_PER_1000MG_SODIUM=${ELECTROLYTE_G_PER_1000MG_SODIUM}`,
-  ];
-
-  const text = lines.join("\n");
-  try {
-    await navigator.clipboard.writeText(text);
-    els.copyPlan.textContent = "Copied";
-  } catch (err) {
-    els.copyPlan.textContent = "Copy failed";
-  }
-  setTimeout(() => {
-    els.copyPlan.textContent = "Copy plan";
-  }, 1500);
-});
 
 els.durationValue.step = "1";
 switchTab("planner");
