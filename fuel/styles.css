@@ -260,6 +260,49 @@ code {
   letter-spacing: 0.01em;
 }
 
+.method-guide {
+  margin: 1rem 0 1.1rem;
+  padding: 0.9rem 1rem;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  background: #ffffffb0;
+}
+
+.method-guide h3 {
+  margin: 0 0 0.35rem;
+}
+
+.method-guide h4 {
+  margin: 0.75rem 0 0.35rem;
+}
+
+.method-guide p {
+  margin: 0.35rem 0 0.55rem;
+}
+
+.method-guide ul,
+.method-guide ol {
+  margin: 0.2rem 0 0.65rem;
+  padding-left: 1.2rem;
+}
+
+.method-guide ul {
+  list-style: disc;
+}
+
+.method-guide ul ul {
+  margin-top: 0.4rem;
+  list-style: disc;
+}
+
+.method-guide ol {
+  list-style: decimal;
+}
+
+.method-guide li {
+  margin-bottom: 0.35rem;
+}
+
 .ingredient-list li {
   display: flex;
   justify-content: space-between;
