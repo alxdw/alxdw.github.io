@@ -193,7 +193,7 @@
               <h3>Recipe per pouch</h3>
               <ul>
                 <li>
-                  <span>Carbs</span><strong id="outCarbsPerPouch"></strong>
+                  <span>Dry mix</span><strong id="outMixPerPouch"></strong>
                 </li>
                 <li>
                   <span>Water</span><strong id="outWaterPerPouch"></strong>
@@ -218,6 +218,9 @@
                 <li>
                   <span>Carbs per pouch (planned)</span
                   ><strong id="outCarbsPerPouchPlanned"></strong>
+                </li>
+                <li>
+                  <span>Total dry mix</span><strong id="outTotalMix"></strong>
                 </li>
                 <li>
                   <span>Total water</span><strong id="outTotalWater"></strong>
@@ -256,7 +259,9 @@
             expensive and high-performing sports products on the market. They
             have been tried and tested by cyclists and runners participating in
             some of the biggest events in the world.
-            <span class="affiliate-subheader">Includes affiliate links.</span>
+            <span class="affiliate-subheader" id="amazonRegionNote"
+              >Includes affiliate links.</span
+            >
           </p>
 
           <article class="method-guide">
@@ -289,6 +294,9 @@
             <h4>Creating Gels</h4>
             <ol>
               <li>Use the Planner tab to calculate required carbohydrates.</li>
+              <li>Dry mix (g) = target carbs / 0.875.</li>
+              <li>Water (g/ml) = dry mix * (40/60).</li>
+              <li>Gel ratio is 60% mix and 40% water.</li>
               <li>Mix boiling water with specified carbohydrate mix.</li>
               <li>(Optional) add hydration mix.</li>
               <li>
@@ -324,6 +332,7 @@
               would recommend a
               <a
                 href="https://amzn.to/4u3Ln15"
+                data-amazon-key="naturalCordial"
                 target="_blank"
                 rel="noopener noreferrer"
                 >natural cordial</a
@@ -376,6 +385,7 @@
             <li>
               <a
                 href="https://amzn.to/4cwLcop"
+                data-amazon-key="hydrapak150"
                 target="_blank"
                 rel="noopener noreferrer"
                 >Best soft reusable container (Hydrapak 150 ml)</a
@@ -384,6 +394,7 @@
             <li>
               <a
                 href="https://amzn.to/4bX6xal"
+                data-amazon-key="kidsPouches"
                 target="_blank"
                 rel="noopener noreferrer"
                 >Best budget option (kids reusable food pouches)</a

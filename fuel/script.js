@@ -1,32 +1,70 @@
 const CARB_RATIO = 0.6;
 const WATER_RATIO = 0.4;
+const MIX_CARB_YIELD = 0.875;
 const CARB_DENSITY_G_PER_ML = 0.7;
 const ELECTROLYTE_G_PER_1000MG_SODIUM = 4.8;
+const AMAZON_US_ASSOCIATE_TAG = "w5y01-20";
+const GEO_CACHE_KEY = "fuelCountryLookupV1";
+const GEO_CACHE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+
+const STATIC_AMAZON_LINKS = {
+  naturalCordial: {
+    default: "https://amzn.to/4u3Ln15",
+    US: "https://www.amazon.com/s?k=natural+fruit+cordial+concentrate",
+  },
+  hydrapak150: {
+    default: "https://amzn.to/4cwLcop",
+    US: "https://www.amazon.com/s?k=HydraPak+SoftFlask+150ml",
+  },
+  kidsPouches: {
+    default: "https://amzn.to/4bX6xal",
+    US: "https://www.amazon.com/s?k=reusable+kids+food+pouches",
+  },
+};
+
+let activeCountryCode = null;
 
 const RECIPE_TEMPLATES = [
   {
     name: "Carbohydrate mix",
-    note: "Approx. 80 g carbs per serving. Can be mixed as a gel (recommended80% mix to 20% water) or as a drink.",
+    note: "Approx. 80 g carbs per serving. Gel ratio: 60% mix / 40% water. Yield: 1 g mix = 0.875 g carbs.",
     baseBatchServings: 10,
     perServingIngredients: [
       {
         name: "Maltodextrin",
         amount: 44,
         unit: "g",
-        url: "https://amzn.to/4aBpDAC",
+        urls: {
+          default: "https://amzn.to/4aBpDAC",
+          US: "https://www.amazon.com/s?k=maltodextrin+powder",
+        },
       },
       {
         name: "Fructose",
         amount: 36,
         unit: "g",
-        url: "https://amzn.to/4kAzXxb",
+        urls: {
+          default: "https://amzn.to/4kAzXxb",
+          US: "https://www.amazon.com/s?k=crystalline+fructose",
+        },
       },
-      { name: "Pectin", amount: 1.25, unit: "g", url: "https://amzn.to/3ZzzQbL" },
+      {
+        name: "Pectin",
+        amount: 1.25,
+        unit: "g",
+        urls: {
+          default: "https://amzn.to/3ZzzQbL",
+          US: "https://www.amazon.com/s?k=low+methoxyl+pectin",
+        },
+      },
       {
         name: "Sodium alginate",
         amount: 1.0,
         unit: "g",
-        url: "https://amzn.to/4qJr4TF",
+        urls: {
+          default: "https://amzn.to/4qJr4TF",
+          US: "https://www.amazon.com/s?k=sodium+alginate+powder+food+grade",
+        },
       },
     ],
   },
@@ -39,25 +77,37 @@ const RECIPE_TEMPLATES = [
         name: "Sodium citrate",
         amount: 3.67,
         unit: "g",
-        url: "https://amzn.to/4cfULrZ",
+        urls: {
+          default: "https://amzn.to/4cfULrZ",
+          US: "https://www.amazon.com/s?k=sodium+citrate+food+grade",
+        },
       },
       {
         name: "Saxa so low (lite salt blend)",
         amount: 0.8,
         unit: "g",
-        url: "https://amzn.to/4bRkpD3",
+        urls: {
+          default: "https://amzn.to/4bRkpD3",
+          US: "https://www.amazon.com/s?k=Morton+Lite+Salt",
+        },
       },
       {
         name: "Magnesium sulphate",
         amount: 0.25,
         unit: "g",
-        url: "https://amzn.to/4ayVfGO",
+        urls: {
+          default: "https://amzn.to/4ayVfGO",
+          US: "https://www.amazon.com/s?k=USP+magnesium+sulfate+powder",
+        },
       },
       {
         name: "Calcium carbonate",
         amount: 0.08,
         unit: "g",
-        url: "https://amzn.to/3OJ8b5H",
+        urls: {
+          default: "https://amzn.to/3OJ8b5H",
+          US: "https://www.amazon.com/s?k=calcium+carbonate+powder+food+grade",
+        },
       },
     ],
   },
@@ -87,18 +137,20 @@ const els = {
   electrolytePerHour: document.getElementById("electrolytePerHour"),
   electrolytePerHourSlider: document.getElementById("electrolytePerHourSlider"),
   warning: document.getElementById("warning"),
-  outCarbsPerPouch: document.getElementById("outCarbsPerPouch"),
+  outMixPerPouch: document.getElementById("outMixPerPouch"),
   outWaterPerPouch: document.getElementById("outWaterPerPouch"),
   outElectrolytePerPouch: document.getElementById("outElectrolytePerPouch"),
   outTotalCarbs: document.getElementById("outTotalCarbs"),
   outPouchesNeeded: document.getElementById("outPouchesNeeded"),
   outCarbsPerPouchPlanned: document.getElementById("outCarbsPerPouchPlanned"),
+  outTotalMix: document.getElementById("outTotalMix"),
   outTotalWater: document.getElementById("outTotalWater"),
   outTotalElectrolyte: document.getElementById("outTotalElectrolyte"),
   recipeScale: document.getElementById("recipeScale"),
   recipeScaleSlider: document.getElementById("recipeScaleSlider"),
   recipeScaleSummary: document.getElementById("recipeScaleSummary"),
   recipeCards: document.getElementById("recipeCards"),
+  amazonRegionNote: document.getElementById("amazonRegionNote"),
 };
 
 let manualCarbOverride = false;
@@ -217,7 +269,10 @@ function calculatePlan() {
     totalCarbs > 0 ? Math.ceil(totalCarbs / maxCarbsPerPouch) : 0;
   const carbsPerPouchPlanned =
     pouchesNeeded > 0 ? totalCarbs / pouchesNeeded : 0;
-  const waterPerPouch = carbsPerPouchPlanned * (WATER_RATIO / CARB_RATIO);
+  const mixPerPouch =
+    pouchesNeeded > 0 ? carbsPerPouchPlanned / MIX_CARB_YIELD : 0;
+  const waterPerPouch = mixPerPouch * (WATER_RATIO / CARB_RATIO);
+  const totalMix = mixPerPouch * pouchesNeeded;
   const totalWater = waterPerPouch * pouchesNeeded;
 
   const includeElectrolytes = els.includeElectrolytes.checked;
@@ -242,7 +297,7 @@ function calculatePlan() {
       ? totalElectrolyte / pouchesNeeded
       : 0;
 
-  els.outCarbsPerPouch.textContent = fmt(carbsPerPouchPlanned, "g", 1);
+  els.outMixPerPouch.textContent = `${fmt(mixPerPouch, "g", 1)} (${fmt(carbsPerPouchPlanned, "g", 1)} carbs)`;
   els.outWaterPerPouch.textContent = fmt(waterPerPouch, "g", 1);
   els.outElectrolytePerPouch.textContent = includeElectrolytes
     ? fmt(electrolytePerPouch, "g", 2)
@@ -250,6 +305,7 @@ function calculatePlan() {
   els.outTotalCarbs.textContent = fmt(totalCarbs, "g", 1);
   els.outPouchesNeeded.textContent = String(pouchesNeeded);
   els.outCarbsPerPouchPlanned.textContent = fmt(carbsPerPouchPlanned, "g", 1);
+  els.outTotalMix.textContent = fmt(totalMix, "g", 1);
   els.outTotalWater.textContent = fmt(totalWater, "g", 1);
   els.outTotalElectrolyte.textContent = includeElectrolytes
     ? fmt(totalElectrolyte, "g", 2)
@@ -273,7 +329,9 @@ function calculatePlan() {
     maxCarbsPerPouch,
     pouchesNeeded,
     carbsPerPouchPlanned,
+    mixPerPouch,
     waterPerPouch,
+    totalMix,
     totalWater,
     includeElectrolytes,
     sodiumPerHour,
@@ -294,6 +352,132 @@ function formatAmount(amount, unit) {
   return `${round(amount, decimals)} ${unit}`;
 }
 
+function getLocalizedUrl(urls) {
+  if (!urls) {
+    return null;
+  }
+  if (activeCountryCode === "US" && urls.US) {
+    return withAmazonUsTag(urls.US);
+  }
+  return urls.default || urls.US || null;
+}
+
+function withAmazonUsTag(url) {
+  if (!url || !AMAZON_US_ASSOCIATE_TAG) {
+    return url;
+  }
+  try {
+    const parsedUrl = new URL(url);
+    if (!parsedUrl.hostname.includes("amazon.com")) {
+      return url;
+    }
+    parsedUrl.searchParams.set("tag", AMAZON_US_ASSOCIATE_TAG);
+    return parsedUrl.toString();
+  } catch {
+    return url;
+  }
+}
+
+function applyStaticAmazonLinks() {
+  document.querySelectorAll("[data-amazon-key]").forEach((anchor) => {
+    const key = anchor.dataset.amazonKey;
+    const urls = STATIC_AMAZON_LINKS[key];
+    const localizedUrl = getLocalizedUrl(urls);
+    if (localizedUrl) {
+      anchor.href = localizedUrl;
+    }
+  });
+}
+
+function updateAmazonRegionNote() {
+  if (!els.amazonRegionNote) {
+    return;
+  }
+  els.amazonRegionNote.textContent =
+    activeCountryCode === "US"
+      ? "Includes affiliate links. Showing Amazon US product alternatives."
+      : "Includes affiliate links.";
+}
+
+async function fetchWithTimeout(url, timeoutMs = 2500) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    if (!response.ok) {
+      return null;
+    }
+    return await response.json();
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+function readCountryFromCache() {
+  try {
+    const raw = localStorage.getItem(GEO_CACHE_KEY);
+    if (!raw) {
+      return null;
+    }
+    const parsed = JSON.parse(raw);
+    if (!parsed || !parsed.countryCode || !parsed.savedAt) {
+      return null;
+    }
+    if (Date.now() - Number(parsed.savedAt) > GEO_CACHE_MAX_AGE_MS) {
+      return null;
+    }
+    return parsed.countryCode;
+  } catch {
+    return null;
+  }
+}
+
+function writeCountryToCache(countryCode) {
+  try {
+    localStorage.setItem(
+      GEO_CACHE_KEY,
+      JSON.stringify({
+        countryCode,
+        savedAt: Date.now(),
+      }),
+    );
+  } catch {
+    // Ignore storage errors (e.g., private mode restrictions).
+  }
+}
+
+async function detectCountryCodeByIp() {
+  const cached = readCountryFromCache();
+  if (cached) {
+    return cached;
+  }
+
+  const ipApi = await fetchWithTimeout("https://ipapi.co/json/");
+  if (ipApi?.country_code) {
+    const countryCode = String(ipApi.country_code).toUpperCase();
+    writeCountryToCache(countryCode);
+    return countryCode;
+  }
+
+  const ipWhoIs = await fetchWithTimeout("https://ipwho.is/");
+  if (ipWhoIs?.success && ipWhoIs?.country_code) {
+    const countryCode = String(ipWhoIs.country_code).toUpperCase();
+    writeCountryToCache(countryCode);
+    return countryCode;
+  }
+
+  return null;
+}
+
+async function localizeAmazonLinks() {
+  activeCountryCode = await detectCountryCodeByIp();
+  updateAmazonRegionNote();
+  applyStaticAmazonLinks();
+  renderRecipes();
+}
+
 function renderRecipes() {
   const servings = clamp(Number(els.recipeScale.value) || 1, 1, 1000);
   els.recipeScale.value = Math.round(servings);
@@ -302,18 +486,26 @@ function renderRecipes() {
 
   const cards = RECIPE_TEMPLATES.map((recipe) => {
     const recipeTotalServings = servings;
+    const showCarbYield = recipe.name === "Carbohydrate mix";
+    const formatCarbYield = (amount, unit) => {
+      if (!showCarbYield || unit !== "g") {
+        return "";
+      }
+      return ` (${formatAmount(amount * MIX_CARB_YIELD, "g")} carbs)`;
+    };
     const rows = recipe.perServingIngredients
       .map((ingredient) => {
         const batchAmount = ingredient.amount * recipeTotalServings;
-        const ingredientName = ingredient.url
-          ? `<a class="ingredient-link" href="${ingredient.url}" target="_blank" rel="noopener noreferrer">${ingredient.name}</a>`
+        const ingredientUrl = getLocalizedUrl(ingredient.urls);
+        const ingredientName = ingredientUrl
+          ? `<a class="ingredient-link" href="${ingredientUrl}" target="_blank" rel="noopener noreferrer">${ingredient.name}</a>`
           : ingredient.name;
         return `
           <li>
             <span>${ingredientName}</span>
             <strong class="ingredient-amount">
-              <span>${formatAmount(batchAmount, ingredient.unit)} for batch</span>
-              <span class="ingredient-total">${formatAmount(ingredient.amount, ingredient.unit)} / serving</span>
+              <span>${formatAmount(batchAmount, ingredient.unit)}${formatCarbYield(batchAmount, ingredient.unit)} for batch</span>
+              <span class="ingredient-total">${formatAmount(ingredient.amount, ingredient.unit)}${formatCarbYield(ingredient.amount, ingredient.unit)} / serving</span>
             </strong>
           </li>
         `;
@@ -410,3 +602,4 @@ syncElectrolyteDerivedFields("sodium");
 updateDefaultsAndGuidance();
 calculatePlan();
 renderRecipes();
+localizeAmazonLinks();
