@@ -4,18 +4,34 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Endurance Fuelling 101</title>
+    <meta
+      name="cf-web-analytics-token"
+      content="858161975e514aaea03df566cbf2ab44"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <main class="app">
       <header class="hero">
-        <h1>Fuel Like a Pro</h1>
-        <p>
-          Strategic fueling is your secret weapon for performance, unlocking the
-          ability to push harder, stay sharper, and finish stronger than you
-          ever thought possible. Nutrition companies charge top dollar, but
-          these recipes give you the same edge at a fraction of the cost.
-        </p>
+        <div class="hero-copy">
+          <span class="hero-kicker">Race-day fuel planning</span>
+          <h1>Build your own endurance fuel without the sports nutrition markup.</h1>
+          <p>
+            Plan exact carb targets, mix weights, water, and electrolytes for
+            your session, then turn them into repeatable gel and bottle recipes.
+          </p>
+          <div class="hero-pills" aria-label="Core product points">
+            <span>60:40 gel ratio</span>
+            <span>0.875 g carbs per 1 g mix</span>
+            <span>Planner + recipes</span>
+          </div>
+        </div>
       </header>
 
       <nav class="tabs" aria-label="App sections">
@@ -424,5 +440,22 @@
     </footer>
 
     <script src="script.js"></script>
+    <script>
+      (() => {
+        const token = document
+          .querySelector('meta[name="cf-web-analytics-token"]')
+          ?.content.trim();
+
+        if (!token) {
+          return;
+        }
+
+        const beacon = document.createElement("script");
+        beacon.defer = true;
+        beacon.src = "https://static.cloudflareinsights.com/beacon.min.js";
+        beacon.setAttribute("data-cf-beacon", JSON.stringify({ token }));
+        document.body.appendChild(beacon);
+      })();
+    </script>
   </body>
 </html>
