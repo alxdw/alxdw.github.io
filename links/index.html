@@ -44,49 +44,13 @@
         padding: 76px 0 42px;
         display: flex;
         flex-direction: column;
-      }
-
-      .intro {
-        text-align: center;
-        animation: rise 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
-      }
-
-      .monogram {
-        width: 48px;
-        height: 48px;
-        display: grid;
-        place-items: center;
-        margin: 0 auto 20px;
-        border: 1px solid var(--line);
-        border-radius: 14px;
-        background: rgba(7, 24, 54, 0.64);
-        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.22);
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-          monospace;
-        font-size: 0.9rem;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-      }
-
-      h1 {
-        margin: 0;
-        font-size: clamp(2.25rem, 8vw, 3.35rem);
-        line-height: 0.98;
-        letter-spacing: -0.065em;
-      }
-
-      .intro p {
-        max-width: 310px;
-        margin: 17px auto 0;
-        color: var(--muted);
-        font-size: 1rem;
-        line-height: 1.5;
+        justify-content: center;
       }
 
       .links {
         display: grid;
         gap: 14px;
-        margin-top: 54px;
+        margin: 0;
       }
 
       .app-link {
@@ -185,15 +149,6 @@
         background: rgba(255, 255, 255, 0.09);
       }
 
-      footer {
-        margin-top: auto;
-        padding-top: 64px;
-        color: rgba(184, 193, 211, 0.68);
-        font-size: 0.78rem;
-        letter-spacing: 0.035em;
-        text-align: center;
-      }
-
       @keyframes rise {
         from {
           opacity: 0;
@@ -209,10 +164,6 @@
         .page {
           width: min(calc(100% - 32px), 600px);
           padding-top: 48px;
-        }
-
-        .links {
-          margin-top: 42px;
         }
 
         .app-link {
@@ -243,12 +194,6 @@
   </head>
   <body>
     <main class="page">
-      <header class="intro">
-        <div class="monogram" aria-hidden="true">w5y</div>
-        <h1>Good things,<br />made simply.</h1>
-        <p>A small and growing collection of apps from w5y.</p>
-      </header>
-
       <nav class="links" aria-label="Apps and links">
         <a
           class="app-link"
@@ -271,8 +216,6 @@
           <span class="arrow" aria-hidden="true">↗</span>
         </a>
       </nav>
-
-      <footer>© 2026 w5y</footer>
     </main>
   </body>
 </html>
