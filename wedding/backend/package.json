@@ -1,0 +1,17 @@
+{
+  "name": "becky-alex-wedding-rsvp",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "test": "node --test test/rsvp.test.mjs",
+    "test:integration": "node --test test/runtime.test.mjs",
+    "check": "wrangler deploy --dry-run",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "miniflare": "5.20261023.1-beta",
+    "wrangler": "4.154.0"
+  }
+}

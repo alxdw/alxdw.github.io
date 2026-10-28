@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="theme-color" content="#f8f7f3">
+    <title>A little celebration</title>
+    <link rel="preload" href="../assets/fonts/caladea-regular.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="stylesheet" href="../styles.css">
+    <script type="module" src="../app.js"></script>
+  </head>
+  <body>
+    <div id="preview-banner" class="preview-banner" hidden>Local preview · sample guests · nothing is sent</div>
+    <header class="hero hero--locked" id="hero">
+      <img id="lake-photo" src="../assets/lake-placeholder.svg" alt="A quiet lake and distant mountains" fetchpriority="high">
+      <div class="date-seal" id="date-seal" hidden>
+        <p class="seal-eyebrow">SAVE OUR DATE</p>
+        <p class="seal-date">11<span>/</span>09<span>/</span>27</p>
+        <p class="seal-names">Becky <i>&amp;</i> Alex</p>
+        <span class="seal-line" aria-hidden="true"></span>
+      </div>
+    </header>
+
+    <main id="main" class="page-content">
+      <section id="access-view" class="access-message" aria-live="polite">
+        <p id="access-message">Send us a WhatsApp for access.</p>
+        <button type="button" id="retry-access" class="text-button" hidden>Try again</button>
+        <noscript><p>Please enable JavaScript to open your personal invitation.</p></noscript>
+      </section>
+
+      <div id="invitation" hidden>
+        <nav class="progress" aria-label="Your response" id="progress" hidden>
+          <button type="button" id="back-button" class="back-button" aria-label="Go back"><span aria-hidden="true">←</span> Back</button>
+          <span id="step-label">Your reply</span>
+        </nav>
+        <section id="welcome-view" class="view" hidden aria-labelledby="welcome-title">
+          <p class="eyebrow" id="greeting"></p>
+          <h1 id="welcome-title" tabindex="-1">Save the date<span class="title-dot">.</span></h1>
+          <p class="intro">We’re getting married!</p>
+          <p>Join us in Nottinghamshire on <strong>Saturday 11 September 2027</strong> for a day of love, laughter and a little dancing.</p>
+          <p>We’d love to know if you think you can make it. This is just the beginning — a formal invitation will follow.</p>
+          <div class="response-choices">
+            <button type="button" id="accept-button" class="button button--primary">Yes, we’d love to come <span aria-hidden="true">↗</span></button>
+            <button type="button" id="decline-button" class="button button--secondary">Sorry, we can’t make it</button>
+          </div>
+          <p id="existing-response" class="small-note" hidden>You’ve already replied. You’re welcome to update your response.</p>
+          <p class="signature">With love, <span>Becky &amp; Alex</span></p>
+        </section>
+
+        <section id="guests-view" class="view" hidden aria-labelledby="guests-title">
+          <p class="eyebrow">A LITTLE HEADCOUNT</p>
+          <h1 id="guests-title" tabindex="-1">Who’s coming?</h1>
+          <p>Tick everyone who plans to join us.</p>
+          <form id="guests-form">
+            <fieldset class="guest-list"><legend class="sr-only">Guests attending</legend><div id="guest-options"></div></fieldset>
+            <p id="guests-error" class="error" role="alert" hidden></p>
+            <button type="submit" class="button button--primary">Continue to your address <span aria-hidden="true">→</span></button>
+          </form>
+          <p class="small-note">Can’t all make it? Just leave those names unticked.</p>
+        </section>
+
+        <section id="address-view" class="view" hidden aria-labelledby="address-title">
+          <p class="eyebrow">SOMETHING LOVELY IN THE POST</p>
+          <h1 id="address-title" tabindex="-1">Where shall we send<br class="desktop-break"> your invitation?</h1>
+          <p>Leave us a postal address and we’ll take care of the rest.</p>
+          <form id="address-form">
+            <label class="field">Names on the envelope<input name="recipient" id="recipient" autocomplete="name" required maxlength="200"></label>
+            <div id="address-search" class="address-search" hidden>
+              <p class="field-label" id="address-search-label">Find your address</p>
+              <div id="autocomplete-container"></div>
+              <p class="small-note" id="autocomplete-help">Choose an address, then check the details below.</p>
+            </div>
+            <div class="address-divider"><span>Your postal address</span></div>
+            <label class="field">Address line 1<input name="line1" id="line1" autocomplete="address-line1" required maxlength="200"></label>
+            <label class="field"><span>Address line 2 <span class="optional">(optional)</span></span><input name="line2" id="line2" autocomplete="address-line2" maxlength="200"></label>
+            <div class="field-pair">
+              <label class="field">Town / city<input name="city" id="city" autocomplete="address-level2" required maxlength="100"></label>
+              <label class="field">Postcode<input name="postcode" id="postcode" autocomplete="postal-code" maxlength="30"></label>
+            </div>
+            <label class="field"><span>County / region <span class="optional">(optional)</span></span><input name="region" id="region" autocomplete="address-level1" maxlength="100"></label>
+            <label class="field">Country<input name="country" id="country" autocomplete="country-name" required maxlength="100" value="United Kingdom"></label>
+            <p class="small-note privacy-note">Just for your invitation and wedding correspondence.</p>
+            <p id="address-error" class="error" role="alert" hidden></p>
+            <button type="submit" class="button button--primary" id="send-acceptance">Send our reply <span aria-hidden="true">↗</span></button>
+          </form>
+        </section>
+
+        <section id="decline-view" class="view" hidden aria-labelledby="decline-title">
+          <p class="eyebrow">THANK YOU FOR LETTING US KNOW</p>
+          <h1 id="decline-title" tabindex="-1">We’ll miss you.</h1>
+          <p id="decline-description">This will let us know that none of the guests on your invitation can make it.</p>
+          <p>If some of you can join us, go back and choose “Yes” to tell us who’s coming.</p>
+          <p id="decline-error" class="error" role="alert" hidden></p>
+          <button type="button" id="send-decline" class="button button--primary">Confirm our reply <span aria-hidden="true">→</span></button>
+          <button type="button" id="some-attending" class="text-button">Actually, some of us can come</button>
+        </section>
+
+        <section id="thanks-view" class="view thanks-view" hidden aria-labelledby="thanks-title">
+          <p class="eyebrow" id="saved-label">YOUR REPLY IS SAFELY WITH US</p>
+          <h1 id="thanks-title" tabindex="-1"></h1>
+          <p id="thanks-message"></p>
+          <figure class="couple-photo"><img id="couple-photo" src="../assets/couple-placeholder.svg" alt="A photograph of Becky and Alex will be added here" loading="lazy"></figure>
+          <p class="signature">With love, <span>Becky &amp; Alex</span></p>
+          <button type="button" id="edit-response" class="text-button">Update your reply</button>
+        </section>
+      </div>
+    </main>
+    <footer id="footer" hidden>BECKY &amp; ALEX <span aria-hidden="true">·</span> 11 SEPTEMBER 2027</footer>
+  </body>
+</html>

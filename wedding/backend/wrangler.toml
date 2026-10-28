@@ -1,0 +1,30 @@
+name = "becky-alex-wedding-rsvp"
+account_id = "db2dac1c0f9a52c0956d52456054acf5"
+main = "worker.mjs"
+compatibility_date = "2026-10-28"
+workers_dev = true
+
+[vars]
+SPREADSHEET_ID = "1hCBZGI-zUqS1re1IkxozXr--rFxLbNvRXjlgb3XA5vk"
+ALLOWED_ORIGINS = "https://w5y.me"
+
+[[durable_objects.bindings]]
+name = "RSVP_STORE"
+class_name = "WeddingStore"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["WeddingStore"]
+
+[observability]
+enabled = true
+redact_query_string = true
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+invocation_logs = false
+
+[observability.traces]
+enabled = true
+head_sampling_rate = 0.01

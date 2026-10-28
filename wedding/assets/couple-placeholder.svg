@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 850">
+  <rect width="1000" height="850" fill="#e4e9e5"/>
+  <rect x="40" y="40" width="920" height="770" rx="2" fill="none" stroke="#b9c7c8"/>
+  <ellipse cx="500" cy="410" rx="190" ry="235" fill="#f5f4ec"/>
+  <text x="500" y="415" text-anchor="middle" fill="#94a8b3" font-family="Georgia,serif" font-style="italic" font-size="78">B &amp; A</text>
+  <path d="M470 465h60" stroke="#94a8b3"/>
+  <text x="500" y="720" text-anchor="middle" fill="#60737b" font-family="Georgia,serif" font-size="23">A photograph of us, soon.</text>
+</svg>

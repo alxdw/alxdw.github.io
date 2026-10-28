@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="theme-color" content="#f8f7f3">
+    <title>A little celebration</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body class="access-page">
+    <main>
+      <div class="hero hero--locked"><img id="lake-photo" src="./assets/lake-placeholder.svg" alt="A quiet lake and distant mountains" fetchpriority="high"></div>
+      <div class="access-message"><p>Send us a WhatsApp for access.</p></div>
+    </main>
+    <script type="module">
+      import { config } from './config.js';
+      // Preserve personalised links sent to /wedding/ without exposing names.
+      const token = new URLSearchParams(location.search).get('invite');
+      if (token && /^[A-Za-z0-9_-]{43}$/.test(token)) {
+        location.replace('./save-the-date/?invite=' + encodeURIComponent(token));
+      }
+      const photo = new Image();
+      photo.onload = () => document.querySelector('#lake-photo').src = photo.src;
+      photo.src = config.photos.lake;
+    </script>
+  </body>
+</html>
