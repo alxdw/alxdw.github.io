@@ -1,5 +1,5 @@
 export const weddingEvent = Object.freeze({
-  title: 'Becky & Alex’s wedding',
+  title: 'Save the Date: Becky & Alex',
   start: '20270911',
   end: '20270912', // All-day DTEND is exclusive: this is ONE day, September 11.
   location: 'Nottinghamshire',

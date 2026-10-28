@@ -64,6 +64,7 @@ test('Google Calendar has the same all-day date range and no invitation token', 
   assert.equal(url.origin, 'https://calendar.google.com');
   assert.equal(url.searchParams.get('dates'), '20270911/20270912');
   assert.equal(url.searchParams.get('text'), weddingEvent.title);
+  assert.equal(url.searchParams.get('text'), 'Save the Date: Becky & Alex');
   assert.equal(url.searchParams.get('location'), 'Nottinghamshire');
   assert.ok(!url.searchParams.has('invite'));
 });
