@@ -1,0 +1,2 @@
+# Preserve the generated iCalendar download's required CRLF wire format.
+wedding/assets/*.ics -text -diff

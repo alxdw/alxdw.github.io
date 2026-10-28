@@ -1,4 +1,8 @@
 import { config } from './config.js';
+import { addressFromComponents } from './address.mjs';
+import { googleCalendarUrl } from './calendar.mjs';
+
+document.querySelectorAll('[data-calendar-google]').forEach((link) => { link.href = googleCalendarUrl(); });
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -173,6 +177,7 @@ async function submit(answer) {
     $('existing-response').hidden = false;
     $('thanks-title').textContent = config.messages[answer].title;
     $('thanks-message').textContent = config.messages[answer].body;
+    $('thanks-calendar').hidden = answer !== 'yes';
     $('saved-label').textContent = preview ? 'PREVIEW COMPLETE · NO RESPONSE WAS SENT' : 'YOUR REPLY IS SAFELY WITH US';
     submissionId = undefined;
     saved = true;
@@ -192,8 +197,16 @@ async function submit(answer) {
 async function startAutocomplete() {
   if (autocompleteStarted || !config.googleMapsApiKey || preview) return;
   autocompleteStarted = true;
+  $('address-search').hidden = false;
+  $('autocomplete-help').textContent = 'Loading address search… You can also enter your address below.';
+  let authenticationFailed = false;
+  const unavailable = () => {
+    $('autocomplete-container').replaceChildren();
+    $('autocomplete-help').textContent = 'Address search is unavailable. Please enter your address below.';
+  };
+  window.gm_authFailure = () => { authenticationFailed = true; unavailable(); };
   try {
-    await new Promise((resolve, reject) => {
+    if (!window.google?.maps?.importLibrary) await new Promise((resolve, reject) => {
       const script = document.createElement('script');
       const timer = setTimeout(() => reject(new Error('Autocomplete timeout')), 10000);
       window.weddingMapsReady = () => { clearTimeout(timer); resolve(); };
@@ -203,32 +216,34 @@ async function startAutocomplete() {
       document.head.append(script);
     });
     const { PlaceAutocompleteElement } = await google.maps.importLibrary('places');
+    if (authenticationFailed) return;
     const widget = new PlaceAutocompleteElement();
     widget.setAttribute('aria-label', 'Find your postal address');
+    widget.setAttribute('aria-describedby', 'autocomplete-help');
+    widget.setAttribute('placeholder', 'Start typing your address or postcode');
     $('autocomplete-container').append(widget);
-    $('address-search').hidden = false;
-    widget.addEventListener('gmp-error', () => { $('autocomplete-help').textContent = 'Address search is unavailable. Please enter your address below.'; });
+    $('autocomplete-help').textContent = 'Choose an address, then check the details below. You can edit every field.';
+    widget.addEventListener('gmp-error', unavailable);
     widget.addEventListener('gmp-select', async ({ placePrediction }) => {
       try {
         const place = placePrediction.toPlace();
         await place.fetchFields({ fields: ['addressComponents'] });
-        const parts = place.addressComponents || [];
-        const get = (type) => parts.find((part) => part.types.includes(type))?.longText || '';
-        $('line1').value = [get('street_number'), get('route')].filter(Boolean).join(' ') || get('premise');
-        $('line2').value = [get('subpremise'), get('street_number') && get('premise')].filter(Boolean).join(', ');
-        $('city').value = get('postal_town') || get('locality') || get('administrative_area_level_2');
-        $('region').value = get('administrative_area_level_1');
-        $('postcode').value = [get('postal_code'), get('postal_code_suffix')].filter(Boolean).join('-');
-        $('country').value = get('country');
+        const address = addressFromComponents(place.addressComponents);
+        if (!address) {
+          $('autocomplete-help').textContent = 'Please choose a full street address, or enter the details below.';
+          return;
+        }
+        for (const [field, value] of Object.entries(address)) $(field).value = value;
         $('autocomplete-help').textContent = 'Address added. Please check the details, including any flat or house name.';
         submissionId = undefined;
-        $('line1').focus();
+        $('line2').focus();
       } catch {
         $('autocomplete-help').textContent = 'We couldn’t fill that address. You can enter it below.';
       }
     });
   } catch {
-    // Manual address entry is always available, including blocked or failed Google scripts.
+    unavailable();
+    autocompleteStarted = false;
   }
 }
 

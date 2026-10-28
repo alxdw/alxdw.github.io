@@ -43,6 +43,13 @@
             <button type="button" id="accept-button" class="button button--primary">Yes, we’d love to come <span aria-hidden="true">↗</span></button>
             <button type="button" id="decline-button" class="button button--secondary">Sorry, we can’t make it</button>
           </div>
+          <details class="calendar-menu">
+            <summary>Add to calendar</summary>
+            <div class="calendar-links">
+              <a data-calendar-google target="_blank" rel="noopener noreferrer">Google Calendar <span aria-hidden="true">↗</span></a>
+              <a href="../assets/becky-alex-wedding.ics">Apple Calendar / Outlook <span aria-hidden="true">↗</span></a>
+            </div>
+          </details>
           <p id="existing-response" class="small-note" hidden>You’ve already replied. You’re welcome to update your response.</p>
           <p class="signature">With love, <span>Becky &amp; Alex</span></p>
         </section>
@@ -68,7 +75,7 @@
             <div id="address-search" class="address-search" hidden>
               <p class="field-label" id="address-search-label">Find your address</p>
               <div id="autocomplete-container"></div>
-              <p class="small-note" id="autocomplete-help">Choose an address, then check the details below.</p>
+              <p class="small-note" id="autocomplete-help" role="status" aria-live="polite">Choose an address, then check the details below.</p>
             </div>
             <div class="address-divider"><span>Your postal address</span></div>
             <label class="field">Address line 1<input name="line1" id="line1" autocomplete="address-line1" required maxlength="200"></label>
@@ -99,6 +106,13 @@
           <p class="eyebrow" id="saved-label">YOUR REPLY IS SAFELY WITH US</p>
           <h1 id="thanks-title" tabindex="-1"></h1>
           <p id="thanks-message"></p>
+          <details class="calendar-menu" id="thanks-calendar" hidden>
+            <summary>Add to calendar</summary>
+            <div class="calendar-links">
+              <a data-calendar-google target="_blank" rel="noopener noreferrer">Google Calendar <span aria-hidden="true">↗</span></a>
+              <a href="../assets/becky-alex-wedding.ics">Apple Calendar / Outlook <span aria-hidden="true">↗</span></a>
+            </div>
+          </details>
           <figure class="couple-photo"><img id="couple-photo" src="../assets/couple-placeholder.svg" alt="A photograph of Becky and Alex will be added here" loading="lazy"></figure>
           <p class="signature">With love, <span>Becky &amp; Alex</span></p>
           <button type="button" id="edit-response" class="text-button">Update your reply</button>

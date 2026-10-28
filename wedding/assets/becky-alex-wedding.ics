@@ -1,0 +1,18 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Becky and Alex//Wedding//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:becky-alex-wedding-20270911@w5y.me
+DTSTAMP:20261028T000000Z
+DTSTART;VALUE=DATE:20270911
+DTEND;VALUE=DATE:20270912
+SUMMARY:Becky & Alex’s wedding
+LOCATION:Nottinghamshire
+DESCRIPTION:Save the date! We’re getting married in Nottinghamshire. A fo
+ rmal invitation with the venue and timings will follow.
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+END:VCALENDAR

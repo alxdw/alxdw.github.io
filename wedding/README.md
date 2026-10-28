@@ -85,9 +85,31 @@ Enable **Maps JavaScript API** and **Places API (New)** with billing in Google C
 
 The current `PlaceAutocompleteElement` uses `gmp-select` and requests only `addressComponents`. Selected values fill editable postal fields; manual entry always works, including Google outages and countries without postcodes. UK addresses require a postcode on the server. Preserve Google's attribution in the widget.
 
+Structured address mapping preserves flat/unit and building names, uses the UK postal town/county where supplied, and handles international postal-code suffixes. A postcode-only prediction does not overwrite an existing address. Loading, authentication and search errors leave the manual form available.
+
 Live address autocomplete must be tested once its browser key is configured. The Sheets backend has already been verified separately. See [Google's widget guide](https://developers.google.com/maps/documentation/javascript/place-autocomplete-new) and [key restrictions](https://developers.google.com/maps/api-security-best-practices).
 
+## Add to calendar
+
+Valid invitations offer an **Add to calendar** menu on the welcome page and after an acceptance. Decline thank-you pages do not show it. Google Calendar opens a prefilled event for the guest to save; Apple Calendar/Outlook use `assets/becky-alex-wedding.ics`.
+
+The event is **all day on 11 September 2027**, with date-only start `20270911` and exclusive end `20270912`. It has a stable UID, no attendees/organiser email, no guest names and no private invitation token. The location is Nottinghamshire; the description explains that venue and timings will follow.
+
+Edit `calendar.mjs` to change event details, then regenerate the committed download:
+
+```sh
+node wedding/tools/build-calendar.mjs
+```
+
+`.gitattributes` preserves the calendar file's CRLF line endings. The generator folds UTF-8 lines at the iCalendar 75-octet limit.
+
 ## Verification
+
+Frontend address/calendar checks (no dependencies required):
+
+```sh
+node --test wedding/test/frontend.test.mjs
+```
 
 ```sh
 node --test wedding/backend/test/rsvp.test.mjs
