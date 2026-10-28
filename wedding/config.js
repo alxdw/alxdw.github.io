@@ -1,10 +1,10 @@
 // Public settings only. Service-account credentials belong in Worker secrets.
 export const config = {
   apiBase: "https://becky-alex-wedding-rsvp.alex-db2.workers.dev",
-  googleMapsApiKey: "", // Restrict to w5y.me + Maps JavaScript API / Places API (New).
+  googleMapsApiKey: "AIzaSyApG6TTFNKoabZQNMf9Il8Rs7QqzrFUbXg", // Restrict to w5y.me + Maps JavaScript API / Places API (New).
   photos: {
-    lake: new URL('./assets/images/header.jpeg', import.meta.url).href,
-    couple: new URL('./assets/images/thank you.jpeg', import.meta.url).href,
+    lake: new URL("./assets/images/header.jpeg", import.meta.url).href,
+    couple: new URL("./assets/images/thank you.jpeg", import.meta.url).href,
   },
   messages: {
     yes: {
