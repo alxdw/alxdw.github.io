@@ -61,7 +61,11 @@ function show(view, { navigate = true, focus = true } = {}) {
     const top = $('main').getBoundingClientRect().top + scrollY - 20;
     window.scrollTo({ top: Math.max(0, top), behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
   }
-  if (view === 'address') void startAutocomplete();
+  if (view === 'address') {
+    const attendingCount = selectedGuests().reduce((count, guest) => count + 1 + Number(!!choices.get(guest.id).plusCheck?.checked), 0);
+    $('send-acceptance').firstChild.textContent = attendingCount === 1 ? 'Send my reply ' : 'Send our reply ';
+    void startAutocomplete();
+  }
 }
 
 function selectedGuests() {

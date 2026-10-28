@@ -90,8 +90,9 @@ h1:focus {
 }
 
 .hero {
+  --hero-height:clamp(178px,55.56vw,430px);
   position:relative;
-  height:clamp(300px,37vw,480px);
+  height:var(--hero-height);
   overflow:hidden;
   background:#becdd0;
   display:grid;
@@ -122,53 +123,30 @@ h1:focus {
 
 .date-seal {
   z-index:1;
-  width:270px;
+  width:calc(var(--hero-height) * .86);
   aspect-ratio:1;
   display:flex;
   align-items:center;
   justify-content:center;
   flex-direction:column;
   border-radius:50%;
-  background:#fafbf4df;
-  box-shadow:0 0 70px #ffffff13;
-  backdrop-filter:blur(3px);
+  background:rgb(255 255 255 / 75%);
   color:var(--title);
   text-align:center;
   animation:seal-in .7s ease both;
 }
 
-.seal-eyebrow {
-  font-size:11px;
-  letter-spacing:.24em;
-  color:var(--ink);
-  margin-bottom:16px;
-}
-
 .seal-date {
-  font-size:48px;
-  line-height:1.1;
-  letter-spacing:-.05em;
-  margin:0 0 8px;
-}
-
-.seal-date span {
-  padding:0 .05em;
+  font-size:calc(var(--hero-height) * .145);
+  line-height:1;
+  margin:0;
 }
 
 .seal-names {
-  font-size:24px;
+  font-size:calc(var(--hero-height) * .064);
+  line-height:1.2;
   margin:0;
-  color:var(--muted);
-}
-
-.seal-names i {
-  font-size:21px;
-}
-
-.seal-line {
-  width:32px;
-  border-top:1px solid #94a8b380;
-  margin-top:22px;
+  color:var(--title);
 }
 
 .page-content {
@@ -259,7 +237,7 @@ h1 {
   background:transparent;
   border-color:#b7c6cd;
   color:var(--ink);
-  justify-content:center;
+  justify-content:space-between;
 }
 
 .button--secondary:hover {
@@ -552,9 +530,6 @@ gmp-place-autocomplete {
   .page-content {
     width:600px;
   }
-  .hero {
-    height:430px;
-  }
   .hero--locked {
     height:580px;
   }
@@ -564,36 +539,11 @@ gmp-place-autocomplete {
   .response-choices {
     grid-template-columns:1fr;
   }
-  .date-seal {
-    width:290px;
-  }
-  .seal-date {
-    font-size:53px;
-  }
 }
 
 @media(max-width:480px) {
-  .hero {
-    height:285px;
-  }
   .hero--locked {
     height:340px;
-  }
-  .date-seal {
-    width:210px;
-  }
-  .seal-date {
-    font-size:39px;
-  }
-  .seal-names {
-    font-size:21px;
-  }
-  .seal-eyebrow {
-    font-size:9px;
-    margin-bottom:13px;
-  }
-  .seal-line {
-    margin-top:16px;
   }
   .page-content {
     width:calc(100% - 40px);
